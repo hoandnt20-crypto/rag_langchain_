@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CLIP-powered image retrieval system - Search videos using text or images">
+  <title>CLIP Image Retrieval | NewbieAI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Left Sidebar: Search Panel (Full Height) -->
+    <aside class="search-sidebar">
+      <!-- Search Section -->
+      <section class="search-section">
+        <!-- Compact Search Controls -->
+        <div class="search-controls">
+          <select id="searchModeSelect" class="search-mode-select">
+            <option value="text">📝 Text Search</option>
+            <option value="image">🖼️ Image Search</option>
+          </select>
+
+          <div class="topk-compact">
+            <span class="topk-label-compact">Top K:</span>
+            <input type="number" id="topkInput" class="topk-input-compact" value="100" min="1" max="500" step="10">
+          </div>
+        </div>
+
+        <!-- Text Search Content -->
+        <div id="textSearchContent" class="search-content active">
+          <div class="search-input-group-sidebar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Describe what you're looking for...">
+            <button id="searchBtn" class="btn btn-primary">
+              Search
+            </button>
+          </div>
+        </div>
+
+        <!-- Image Search Content - ĐÃ CẬP NHẬT ĐỂ GỘP PREVIEW -->
+        <div id="imageSearchContent" class="search-content">
+          <!-- Khu vực Upload/Preview -->
+          <div id="uploadArea" class="upload-area">
+            
+            <!-- Ảnh Preview (Ẩn mặc định) -->
+            <img id="previewImage" class="preview-image" alt="Preview Image" style="display: none;">
+            
+            <!-- Nội dung mặc định khi chưa có ảnh -->
+            <div id="uploadDefaultContent" class="upload-default-content">
+              <div class="upload-icon">📤</div>
+              <div class="upload-text">Upload Image</div>
+              <div class="upload-subtext">PNG, JPG, JPEG</div>
+            </div>
+
+            <!-- Nút xóa ảnh đã chọn (Ẩn mặc định) -->
+            <button id="clearImageBtn" class="clear-image-btn" style="display: none;">✕</button>
+            
+            <!-- Input file được đặt ở đây và làm cho nó bao phủ toàn bộ vùng qua CSS -->
+            <input type="file" id="imageInput" accept="image/*">
+          </div>
+
+          <button id="uploadBtn" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">
+            Search
+          </button>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message"></div>
+      </section>
+
+      <!-- YouTube Video Preview (Moved below search) -->
+      <div id="videoPreview" class="video-preview">
+        <div class="video-preview-header">
+          <h3>Video Preview</h3>
+          <button id="closePreview" class="close-preview-btn">✕</button>
+        </div>
+        <div class="video-container">
+          <div id="youtubePlayer" style="width: 100%; height: 240px;"></div>
+        </div>
+        <div class="video-info">
+          <div id="videoTitle" class="video-title"></div>
+          <div id="videoTime" class="video-time"></div>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Searching...</p>
+      </div>
+    </aside>
+
+    <!-- Right Content: Header + Results -->
+    <div class="content-wrapper">
+      <!-- Header -->
+      <header class="header">
+        <h1>🔍 CLIP Image Retrieval</h1>
+        <p>Search through video keyframes using natural language or images</p>
+      </header>
+
+      <!-- Results Panel -->
+      <main class="results-panel">
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state active">
+          <div class="empty-icon">🔍</div>
+          <h3>No results yet</h3>
+          <p>Start searching to see results here</p>
+        </div>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="results-section">
+          <div class="results-header">
+            <h2>Results</h2>
+            <span id="resultsCount" class="results-count"></span>
+          </div>
+          <div id="videoResults" class="video-results"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
