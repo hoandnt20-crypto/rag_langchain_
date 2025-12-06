@@ -10,13 +10,11 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 
-app = FastAPI(title="CLIP Image Retrieval API")
+app = FastAPI(title="Image Retrieval API")
 
-# Initialize Data, CLIP retrieval system
-dataset = Dataset()
+# Initialize 
+dataset   = Dataset()
 retriever = ClipRetrieval(dataset)
-
-
 
 app.add_middleware(
     CORSMiddleware,

@@ -13,11 +13,11 @@ from config import (
 )
 
 
-def get_video_name(img_path):
+def get_video_name(img_path: str) -> str:
     i = img_path.find("_V")
     return img_path[i-3:i+5]
 
-def norm_vectors(vectors):
+def norm_vectors(vectors: np.ndarray) -> np.ndarray:
     if vectors.ndim == 1:
         norms = np.linalg.norm(vectors)
         return vectors / norms

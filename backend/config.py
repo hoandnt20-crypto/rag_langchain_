@@ -3,8 +3,6 @@ KEYFRAMES     = r"..\data\keyframes".replace("\\", "/")
 MAP_KEYFRAMES = r"..\data\map-keyframes".replace("\\", "/")
 MEDIA_INFO    = r"..\data\media-info".replace("\\", "/")
 
-TOP_K = 100
-
 
 import dataclasses
 from typing import List
