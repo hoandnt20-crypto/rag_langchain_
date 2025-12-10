@@ -4,9 +4,11 @@ from typing import List
 from config import KEYFRAMES, Sample
 from utils import (
     load_clip_embs,
-    load_transcript_embs,
+    load_transcription_embs,
+    load_description_embs,
     load_media_info,
-    load_transcript_info,
+    load_transcription_info,
+    load_description_info,
     load_keyframes,
     load_map_keyframes,
     get_video_name,
@@ -24,16 +26,21 @@ class Dataset:
         self.keyframe_list.sort()
         
         # Load dataset components
-        self.clip_embs       = load_clip_embs(self.keyframe_list)
-        self.transcript_embs = load_transcript_embs(self.keyframe_list)
-        self.media_info      = load_media_info(self.keyframe_list)
-        self.transcript_info = load_transcript_info(self.keyframe_list)
-        self.keyframes       = load_keyframes(self.keyframe_list)
-        self.map_keyframes   = load_map_keyframes(self.keyframe_list)
+        self.clip_embs          = load_clip_embs(self.keyframe_list)
+        self.transcription_embs = load_transcription_embs(self.keyframe_list)
+        self.description_embs   = load_description_embs(self.keyframe_list)
+
+        self.media_info         = load_media_info(self.keyframe_list)
+        self.transcription_info = load_transcription_info(self.keyframe_list)
+        self.description_info   = load_description_info(self.keyframe_list)
+        
+        self.keyframes          = load_keyframes(self.keyframe_list)
+        self.map_keyframes      = load_map_keyframes(self.keyframe_list)
         
         # Mapping temporal keyframe 
         logger.info("Mapping temporal keyframe ...")
-        mapping_temporal_keyframe(self.transcript_info, self.map_keyframes)
+        self.transcription_info = mapping_temporal_keyframe(self.transcription_info, self.map_keyframes)
+        self.description_info   = mapping_temporal_keyframe(self.description_info, self.map_keyframes, expand_temporal=4)
         logger.info("Dataset loaded successfully")
 
     def __len__(self):

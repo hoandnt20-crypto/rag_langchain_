@@ -1,15 +1,17 @@
-# embs
+# Embs
 CLIP_EMBS       = r"..\data\embs\clip".replace("\\", "/")
-TRANSCRIPT_EMBS = r"..\data\embs\transcript".replace("\\", "/")
+TRANSCRIPTION_EMBS = r"..\data\embs\transcription".replace("\\", "/")
+DESCRIPTION_EMBS = r"..\data\embs\description".replace("\\", "/")
 
-# info
+# Info
 MEDIA_INFO      = r"..\data\info\media".replace("\\", "/")
-TRANSCRIPT_INFO = r"..\data\info\transcript".replace("\\", "/")
+DESCRIPTION_INFO = r"..\data\info\description".replace("\\", "/")
+TRANSCRIPTION_INFO = r"..\data\info\transcription".replace("\\", "/")
 
 KEYFRAMES       = r"..\data\keyframes".replace("\\", "/")
 MAP_KEYFRAMES   = r"..\data\map-keyframes".replace("\\", "/")
 
-N_cols = 80
+N_cols = 80  # use for progress bar
 
 
 import dataclasses

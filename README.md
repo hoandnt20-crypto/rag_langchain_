@@ -1,39 +1,104 @@
-# CLIP Image Retrieval - Baseline
+# Video Keyframe Retrieval System
 
-Hệ thống tìm kiếm ảnh sử dụng CLIP model với khả năng tìm kiếm bằng văn bản (text-to-image) và ảnh (image-to-image).
+Hệ thống tìm kiếm keyframe video đa phương thức sử dụng CLIP và Sentence Transformers, hỗ trợ tìm kiếm bằng hình ảnh, văn bản CLIP, transcription và description.
+
+---
 
 ## 🚀 Tính năng
 
-- **Text-to-Image Search**: Tìm ảnh bằng mô tả văn bản
-- **Image-to-Image Search**: Tìm ảnh tương tự bằng cách upload ảnh
-- **CLIP Model**: Sử dụng OpenAI CLIP (RN50) để encode
-- **Fast API**: RESTful API với FastAPI
-- **Beautiful UI**: Giao diện web hiện đại với animations
+### 4 Phương thức Tìm kiếm
+1. **CLIP Text Search** - Tìm keyframe bằng mô tả văn bản (sử dụng CLIP model)
+2. **CLIP Image Search** - Tìm keyframe tương tự bằng upload ảnh (sử dụng CLIP model)
+3. **Transcription Search** - Tìm keyframe qua nội dung transcription (sử dụng Sentence Transformer)
+4. **Description Search** - Tìm keyframe qua mô tả video (sử dụng Sentence Transformer)
 
-## 📁 Cấu trúc thư mục data
+### Công nghệ
+- **Dual Model Architecture**: CLIP (RN50) + Sentence Transformers
+- **FastAPI Backend**: RESTful API với CORS support
+- **Modern Frontend**: Giao diện web responsive với animations
+- **Pre-computed Embeddings**: Tìm kiếm nhanh với embeddings đã tính sẵn
+- **Temporal Mapping**: Mapping keyframe với thông tin temporal (frame_idx, pts_time)
+
+---
+
+## 📁 Cấu trúc dự án
 
 ```
 rag_langchain_/
-├── data/
-│   ├── clip_embs/            # Pre-computed embeddings
-│   |── keyframes/            # Image
-│   |── map-keyframes/
-│   └── media-info
+├── backend/                        # FastAPI backend
+│   ├── main.py                    # API endpoints và khởi tạo models
+│   ├── config.py                  # Cấu hình đường dẫn và data models
+│   ├── models.py                  # Load CLIP và Sentence Transformer models
+│   ├── dataset.py                 # Dataset class quản lý data
+│   ├── retrieval.py               # Logic tìm kiếm (ClipRetrieval, TextRetrieval)
+│   ├── utils.py                   # Helper functions (load embeddings, mapping)
+│   └── test.ipynb                 # Notebook để test
+│
+├── data/                          # Dữ liệu và embeddings
+│   ├── embs/                      # Pre-computed embeddings
+│   │   ├── clip/                  # CLIP embeddings (.npy files)
+│   │   ├── transcription/         # Transcription embeddings
+│   │   └── description/           # Description embeddings
+│   ├── info/                      # Metadata
+│   │   ├── media/                 # Video info (title, watch_url)
+│   │   ├── transcription/         # Transcription text
+│   │   └── description/           # Description text
+│   ├── keyframes/                 # Keyframe images (organized by video)
+│   └── map-keyframes/             # Temporal mapping (frame_idx, pts_time, fps)
+│
+├── frontend/                      # Web UI
+│   ├── index.html                # Main HTML
+│   ├── style.css                 # Styling
+│   ├── app.js                    # JavaScript logic
+│   └── README.md                 # Frontend docs
+│
+├── .env                          # Environment variables (HF_TOKEN, model IDs)
+├── requirements.txt              # Python dependencies
+└── README.md                     # This file
+```
+
+---
 
 ## 🛠️ Cài đặt
 
-### 1. Cài đặt dependencies
-
+### 1. Clone repository
 ```bash
-cd backend
+git clone <repo-url>
+cd rag_langchain_
+```
+
+### 2. Cài đặt dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Kiểm tra dữ liệu
+**Dependencies chính:**
+- `fastapi` - Web framework
+- `uvicorn` - ASGI server
+- `torch` + `torchvision` - Deep learning
+- `clip` - OpenAI CLIP model
+- `sentence-transformers` - Text embeddings
+- `pillow` - Image processing
+- `python-dotenv` - Environment variables
 
-Đảm bảo bạn có: 
-- Ảnh trong `data/images/`
-- Embeddings trong `data/clip_embs/clip_image_embeddings.npz`
+### 3. Cấu hình environment variables
+
+Tạo file `.env` trong thư mục root:
+```env
+HF_TOKEN=your_huggingface_token
+TEXT_MODEL_ID=your_text_embedding_model_id
+CLIP_MODEL_ID=your_clip_model_id
+```
+
+### 4. Chuẩn bị dữ liệu
+
+Đảm bảo cấu trúc thư mục `data/` đầy đủ:
+- Keyframes trong `data/keyframes/`
+- Embeddings trong `data/embs/`
+- Metadata trong `data/info/`
+- Temporal mapping trong `data/map-keyframes/`
+
+---
 
 ## 🎯 Sử dụng
 
@@ -48,132 +113,224 @@ API sẽ chạy tại: `http://localhost:8000`
 
 ### 2. Mở Web Demo
 
-Mở file `frontend/index.html` trong trình duyệt hoặc dùng Live Server.
+Mở `frontend/index.html` trong trình duyệt hoặc dùng Live Server.
 
-### 3. API Endpoints
+---
 
-#### Health Check
+## 📡 API Endpoints
+
+### Health Check
 ```bash
-GET http://localhost:8000/health
+GET /health
+```
+**Response:**
+```json
+{
+  "status": "ok",
+  "model": "CLIP-RN50",
+  "num_images": 12345
+}
 ```
 
-#### Text Search
+### 1. CLIP Text Search
 ```bash
-POST http://localhost:8000/search/text
-Form Data:
-  - query: "a cute dog"
-  - top_k: 5
+POST /search/clip_text
+Content-Type: multipart/form-data
+
+query: "a person playing guitar"
+top_k: 100
 ```
 
-#### Image Search
+### 2. CLIP Image Search
 ```bash
-POST http://localhost:8000/search/image
-Form Data:
-  - file: <image file>
-  - top_k: 5
+POST /search/clip_image
+Content-Type: multipart/form-data
+
+file: <image_file>
+top_k: 100
 ```
 
-#### Get Image
+### 3. Transcription Search
 ```bash
-GET http://localhost:8000/images/{image_name}
+POST /search/transcription
+Content-Type: multipart/form-data
+
+query: "machine learning tutorial"
+top_k: 100
 ```
 
-## 📊 Đánh giá Baseline
-
-Chạy script đánh giá để xem metrics:
-
+### 4. Description Search
 ```bash
-cd backend
-python evaluate.py
+POST /search/description
+Content-Type: multipart/form-data
+
+query: "cooking recipe video"
+top_k: 100
 ```
 
-Kết quả bao gồm:
-- **Recall@K**: Độ chính xác tìm kiếm
-- **Search Time**: Thời gian tìm kiếm trung bình
-- **Sample Results**: Kết quả mẫu cho các query
+### Response Format
+Tất cả endpoints trả về danh sách `SearchResult`:
+```json
+[
+  {
+    "video_name": "L22_V025",
+    "title": "Video Title",
+    "watch_url": "https://youtube.com/embed/VIDEO_ID",
+    "keyframe": ["keyframes/L22_V025/203.jpg", "keyframes/L22_V025/405.jpg"],
+    "frame_idx": [203, 405],
+    "pts_time": [6.77, 13.54],
+    "similarity": [0.89, 0.85]
+  }
+]
+```
 
-## 🧪 Test thủ công
+### Static Files
+```bash
+GET /static/keyframes/{video_folder}/{frame_number}.jpg
+```
 
-### Test với Python
+---
 
+## 🏗️ Kiến trúc hệ thống
+
+### Models
+
+#### 1. CLIP Model (`models.py`)
 ```python
-from clip_retrieval import CLIPRetrieval
-from PIL import Image
+load_clip_model(device) -> (model, preprocess)
+```
+- Model: OpenAI CLIP RN50
+- Sử dụng cho: CLIP text/image search
+- Output: 1024-dim embeddings
 
-# Initialize
-retriever = CLIPRetrieval()
+#### 2. Text Embedding Model (`models.py`)
+```python
+load_text_embedding_model(device) -> model
+```
+- Model: Sentence Transformer (configurable via .env)
+- Sử dụng cho: Transcription/Description search
+- Output: 384-dim embeddings (depends on model)
 
-# Text search
-results = retriever.search_by_text("a cat", top_k=5)
-for img_name, score in results:
-    print(f"{img_name}: {score:.4f}")
+### Dataset (`dataset.py`)
 
-# Image search
-image = Image.open("path/to/image.jpg")
-results = retriever.search_by_image(image, top_k=5)
+Class `Dataset` quản lý toàn bộ data:
+```python
+dataset = Dataset()
+dataset.clip_embs              # CLIP embeddings
+dataset.transcription_embs     # Transcription embeddings
+dataset.description_embs       # Description embeddings
+dataset.media_info            # Video metadata
+dataset.transcription_info    # Transcription text + temporal mapping
+dataset.description_info      # Description text + temporal mapping
+dataset.keyframes             # Keyframe paths
+dataset.map_keyframes         # Temporal info (frame_idx, pts_time, fps)
 ```
 
-### Test với cURL
+### Retrieval Classes (`retrieval.py`)
 
-```bash
-# Text search
-curl -X POST "http://localhost:8000/search/text" \
-  -F "query=a cute dog" \
-  -F "top_k=5"
-
-# Image search
-curl -X POST "http://localhost:8000/search/image" \
-  -F "file=@path/to/image.jpg" \
-  -F "top_k=5"
+#### 1. ClipRetrieval
+```python
+clip_retriever = ClipRetrieval(model, preprocess, device)
+clip_retriever.search_text(query, dataset, top_k)
+clip_retriever.search_image(image, dataset, top_k)
+results = clip_retriever.collect_results(dataset)
 ```
 
-## 🎨 Web Demo Features
+#### 2. TextRetrieval
+```python
+text_retriever = TextRetrieval(model, support_model, device)
+text_retriever.search_text(query, dataset, "transcription", top_k)
+results = text_retriever.collect_results(dataset, "transcription", top_k)
+```
 
-- **Dual Search Modes**: Tab switching giữa text và image search
-- **Drag & Drop**: Kéo thả ảnh để upload
+**Đặc biệt:** TextRetrieval sử dụng CLIP model như support model để chọn keyframe tốt nhất từ các keyframe có cùng transcription/description.
+
+---
+
+## 🎨 Frontend Features
+
+- **4 Search Tabs**: CLIP Text, CLIP Image, Transcription, Description
+- **Drag & Drop**: Upload ảnh dễ dàng
 - **Real-time Preview**: Xem trước ảnh upload
-- **Beautiful Results**: Hiển thị kết quả với similarity scores
-- **Responsive Design**: Tương thích mọi thiết bị
+- **Video Results**: Hiển thị kết quả theo video với YouTube embed
+- **Keyframe Gallery**: Xem tất cả keyframe tìm được với similarity scores
+- **Responsive Design**: Tương thích mobile/desktop
+- **Modern UI**: Animations, glassmorphism, gradient backgrounds
 
-## 📈 Performance
+---
 
-- **Model**: CLIP RN50 (~38M parameters)
-- **Search Speed**: ~10-50ms per query (CPU)
-- **Embedding Dim**: 1024
-- **Similarity**: Cosine similarity
+## 📊 Performance
 
-## 🔧 Tùy chỉnh
+- **CLIP Model**: RN50 (~38M parameters)
+- **Text Model**: MiniLM-L6-v2 (~22M parameters)
+- **Search Speed**: ~10-100ms per query (depends on dataset size)
+- **Embedding Dimensions**: 
+  - CLIP: 1024
+  - Text: 384 (default)
+- **Similarity Metric**: Cosine similarity
+
+---
+
+## 🔧 Customization
 
 ### Thay đổi CLIP model
-
-Trong `clip_retrieval.py`:
-```python
-retriever = CLIPRetrieval(model_name="ViT-B/32")  # hoặc RN101, ViT-L/14
+Trong `.env`:
+```env
+CLIP_MODEL_ID=ViT-B/32  # hoặc RN101, ViT-L/14
 ```
 
-### Thay đổi số lượng kết quả
+### Thay đổi Text Embedding model
+Trong `.env`:
+```env
+TEXT_MODEL_ID=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+```
 
-Trong API call hoặc web demo, điều chỉnh `top_k` parameter.
+### Điều chỉnh temporal expansion
+Trong `dataset.py`:
+```python
+# Mở rộng temporal window cho description search
+self.description_info = mapping_temporal_keyframe(
+    self.description_info, 
+    self.map_keyframes, 
+    expand_temporal=4  # ±4 keyframes
+)
+```
 
-## 📝 Notes
-
-- Embeddings được pre-compute để tăng tốc độ search
-- CLIP hỗ trợ zero-shot learning, không cần training
-- Cosine similarity được dùng để đo độ tương đồng
+---
 
 ## 🐛 Troubleshooting
 
 ### CORS Error
-Đảm bảo API server đang chạy và CORS middleware được cấu hình đúng.
+Đảm bảo API server đang chạy và CORS middleware đã được cấu hình trong `main.py`.
 
-### Image not found
-Kiểm tra đường dẫn trong `config.py` và đảm bảo ảnh tồn tại trong `data/images/`.
+### Model Download Failed
+- Kiểm tra kết nối internet
+- Đảm bảo `HF_TOKEN` hợp lệ trong `.env`
+- CLIP model sẽ tự động download lần đầu (~350MB)
 
-### CLIP model download
-Lần đầu chạy sẽ tải CLIP model (~350MB), cần kết nối internet.
+### Keyframe Not Found
+- Kiểm tra đường dẫn trong `config.py`
+- Đảm bảo structure `data/keyframes/{video_name}/{frame}.jpg`
+
+### Out of Memory
+- Giảm batch size khi tính embeddings
+- Sử dụng CPU thay vì GPU: `device = "cpu"`
+- Giảm `top_k` trong search
+
+---
 
 ## 📚 References
 
 - [CLIP Paper](https://arxiv.org/abs/2103.00020)
 - [OpenAI CLIP GitHub](https://github.com/openai/CLIP)
+- [Sentence Transformers](https://www.sbert.net/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
+
+---
+
+## 📝 Notes
+
+- Embeddings được pre-compute để tăng tốc độ search
+- CLIP hỗ trợ zero-shot learning, không cần training
+- Temporal mapping giúp tìm đúng thời điểm trong video
+- Support model (CLIP) trong TextRetrieval giúp chọn keyframe tốt nhất khi có nhiều keyframe match cùng text
