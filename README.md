@@ -127,7 +127,7 @@ GET /health
 ```json
 {
   "status": "ok",
-  "model": "CLIP-RN50",
+  "model": "your_clip_model_id",
   "num_images": 12345
 }
 ```
@@ -199,15 +199,15 @@ GET /static/keyframes/{video_folder}/{frame_number}.jpg
 ```python
 load_clip_model(device) -> (model, preprocess)
 ```
-- Model: OpenAI CLIP RN50
+- Model: your_clip_model_id
 - Sử dụng cho: CLIP text/image search
-- Output: 1024-dim embeddings
+- Output: 1024-dim embeddings (depends on model)
 
 #### 2. Text Embedding Model (`models.py`)
 ```python
 load_text_embedding_model(device) -> model
 ```
-- Model: Sentence Transformer (configurable via .env)
+- Model: your_text_embedding_model_id
 - Sử dụng cho: Transcription/Description search
 - Output: 384-dim embeddings (depends on model)
 
@@ -261,8 +261,8 @@ results = text_retriever.collect_results(dataset, "transcription", top_k)
 
 ## 📊 Performance
 
-- **CLIP Model**: RN50 (~38M parameters)
-- **Text Model**: MiniLM-L6-v2 (~22M parameters)
+- **CLIP Model**: your_clip_model_id 
+- **Text Model**: your_text_embedding_model_id 
 - **Search Speed**: ~10-100ms per query (depends on dataset size)
 - **Embedding Dimensions**: 
   - CLIP: 1024
