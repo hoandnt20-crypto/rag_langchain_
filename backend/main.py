@@ -48,7 +48,7 @@ app.mount("/static", StaticFiles(directory=str(DATA_DIR)), name="static")
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "model": "CLIP-RN50", "num_images": len(dataset.keyframes)}
+    return {"status": "ok", "num_images": len(dataset.keyframes)}
 
 
 @app.post("/search/clip_text")
