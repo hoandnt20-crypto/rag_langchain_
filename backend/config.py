@@ -25,12 +25,14 @@ class Sample:
     media_info   : dict      # name, title, watch_url
     map_keyframe : dict      # pts_time, fps, frame_idx
 
+class Keyframe(BaseModel):  # 1 sample keyframe
+    path       : str
+    frame_idx  : int
+    pts_time   : float
+    similarity : float
 
 class SearchResult(BaseModel):
     video_name : str
     title      : str 
     watch_url  : str
-    keyframe   : List[str]
-    frame_idx  : List[int]
-    pts_time   : List[float]
-    similarity : List[float]
+    keyframes  : List[Keyframe]

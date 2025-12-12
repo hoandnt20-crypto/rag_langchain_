@@ -106,7 +106,7 @@ CLIP_MODEL_ID=your_clip_model_id
 
 ```bash
 cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 API sẽ chạy tại: `http://localhost:8000`
@@ -173,13 +173,23 @@ Tất cả endpoints trả về danh sách `SearchResult`:
 ```json
 [
   {
-    "video_name": "L22_V025",
-    "title": "Video Title",
-    "watch_url": "https://youtube.com/embed/VIDEO_ID",
-    "keyframe": ["keyframes/L22_V025/203.jpg", "keyframes/L22_V025/405.jpg"],
-    "frame_idx": [203, 405],
-    "pts_time": [6.77, 13.54],
-    "similarity": [0.89, 0.85]
+    "video_name": "L21_V001",
+    "title": "60 Giây Sáng - Ngày 01082024 - HTV Tin Tức Mới Nhất 2024",
+    "watch_url": "https://youtube.com/embed/Rzpw5WR7nAY",
+    "keyframes": [
+      {
+        "path": "keyframes/L21_V001/170.jpg",
+        "frame_idx": 20702,
+        "pts_time": 690.067,
+        "similarity": 0.5121440857687809
+      },
+      {
+        "path": "keyframes/L22_V023/232.jpg",
+        "frame_idx": 23490,
+        "pts_time": 939.6,
+        "similarity": 0.4272028442152153
+      }
+    ]
   }
 ]
 ```
@@ -276,13 +286,13 @@ results = text_retriever.collect_results(dataset, "transcription", top_k)
 ### Thay đổi CLIP model
 Trong `.env`:
 ```env
-CLIP_MODEL_ID=ViT-B/32  # hoặc RN101, ViT-L/14
+CLIP_MODEL_ID=your_clip_model_id
 ```
 
 ### Thay đổi Text Embedding model
 Trong `.env`:
 ```env
-TEXT_MODEL_ID=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+TEXT_MODEL_ID=your_text_embedding_model_id
 ```
 
 ### Điều chỉnh temporal expansion

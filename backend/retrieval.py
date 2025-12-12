@@ -8,7 +8,7 @@ from PIL import Image
 from typing import List, Literal, Optional
 from dataset import Dataset
 from utils import norm_vectors
-from config import SearchResult, Sample
+from config import SearchResult, Sample, Keyframe
 
 
 
@@ -47,20 +47,20 @@ class JointEmbeddingRetrieval:
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
             if video_name not in results:
+                kf = Keyframe(
+                    path       = keyframe,
+                    frame_idx  = frame_idx,
+                    pts_time   = pts_time,
+                    similarity = sim
+                )
                 results[video_name] = SearchResult(
                     video_name = video_name,
                     watch_url  = watch_url,
                     title      = title,
-                    keyframe   = [keyframe],
-                    frame_idx  = [frame_idx],
-                    pts_time   = [pts_time],
-                    similarity = [sim]
+                    keyframes  = [kf],
                 )
             else:
-                results[video_name].keyframe.append(keyframe)
-                results[video_name].frame_idx.append(frame_idx)
-                results[video_name].pts_time.append(pts_time)
-                results[video_name].similarity.append(sim)
+                results[video_name].keyframes.append(kf)
 
         return list(results.values())
 
@@ -163,19 +163,19 @@ class TextRetrieval:
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
             if video_name not in results:
+                kf = Keyframe(
+                    path       = keyframe,
+                    frame_idx  = frame_idx,
+                    pts_time   = pts_time,
+                    similarity = sim
+                )
                 results[video_name] = SearchResult(
                     video_name = video_name,
                     watch_url  = watch_url,
                     title      = title,
-                    keyframe   = [keyframe],
-                    frame_idx  = [frame_idx],
-                    pts_time   = [pts_time],
-                    similarity = [sim]
+                    keyframes  = [kf],
                 )
             else:
-                results[video_name].keyframe.append(keyframe)
-                results[video_name].frame_idx.append(frame_idx)
-                results[video_name].pts_time.append(pts_time)
-                results[video_name].similarity.append(sim)
+                results[video_name].keyframes.append(kf)
 
         return list(results.values())
