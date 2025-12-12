@@ -1,10 +1,7 @@
-import os
 import torch
-import clip
 
 from PIL import Image
 from io import BytesIO
-from dotenv import load_dotenv
 from pathlib import Path
 from retrieval import ClipRetrieval, TextRetrieval
 from dataset import Dataset
