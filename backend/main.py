@@ -1,10 +1,7 @@
-import os
 import torch
-import clip
 
 from PIL import Image
 from io import BytesIO
-from dotenv import load_dotenv
 from pathlib import Path
 from retrieval import ClipRetrieval, TextRetrieval
 from dataset import Dataset
@@ -51,7 +48,7 @@ app.mount("/static", StaticFiles(directory=str(DATA_DIR)), name="static")
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "model": "CLIP-RN50", "num_images": len(dataset.keyframes)}
+    return {"status": "ok", "num_images": len(dataset.keyframes)}
 
 
 @app.post("/search/clip_text")
