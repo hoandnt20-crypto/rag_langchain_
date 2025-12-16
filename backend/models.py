@@ -15,7 +15,7 @@ hf_logging.set_verbosity_error()
 # Init logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-load_dotenv()
+load_dotenv(override=True, dotenv_path="../.env")
 
 
 def load_text_embedding_model(device):

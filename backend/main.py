@@ -52,7 +52,7 @@ def health():
 
 
 @app.post("/search/clip_text")
-async def search_by_text(query: str = Form(...), top_k: int = Form(100)):
+async def search_by_clip_text(query: str = Form(...), top_k: int = Form(100)):
     try:
         clip_retriever.search_text(query, dataset, top_k=top_k)
         return clip_retriever.collect_results(dataset) 
@@ -64,7 +64,7 @@ async def search_by_text(query: str = Form(...), top_k: int = Form(100)):
 
 
 @app.post("/search/clip_image")
-async def search_by_image(file: UploadFile = File(...), top_k: int = Form(100)):
+async def search_by_clip_image(file: UploadFile = File(...), top_k: int = Form(100)):
     try:
         contents = await file.read()
         image = Image.open(BytesIO(contents)).convert("RGB")
@@ -81,7 +81,7 @@ async def search_by_image(file: UploadFile = File(...), top_k: int = Form(100)):
 async def search_by_transcription(query: str = Form(...), top_k: int = Form(100)):
     try:
         text_retriever.search_text(query, dataset, "transcription", top_k=top_k)
-        return text_retriever.collect_results(dataset, "transcription", top_k)
+        return text_retriever.collect_results(dataset, "transcription")
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -90,10 +90,10 @@ async def search_by_transcription(query: str = Form(...), top_k: int = Form(100)
 
 
 @app.post("/search/description")
-async def search_by_transcription(query: str = Form(...), top_k: int = Form(100)):
+async def search_by_description(query: str = Form(...), top_k: int = Form(100)):
     try:
         text_retriever.search_text(query, dataset, "description", top_k=top_k)
-        return text_retriever.collect_results(dataset, "description", top_k)
+        return text_retriever.collect_results(dataset, "description")
     except Exception as e:
         return JSONResponse(
             status_code=500,

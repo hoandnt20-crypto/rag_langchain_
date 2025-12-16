@@ -1,13 +1,12 @@
-import os
 import torch
 import numpy as np
 import clip
 import pandas as pd
 
 from PIL import Image
-from typing import List, Literal, Optional
+from typing import List, Literal
 from dataset import Dataset
-from utils import norm_vectors
+from utils import norm_vectors, translate_vi_to_en, truncate_text
 from config import SearchResult, Sample, Keyframe
 
 
@@ -46,13 +45,14 @@ class JointEmbeddingRetrieval:
             frame_idx  = int(sample.map_keyframe.frame_idx.item())
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
+            kf = Keyframe(
+                path       = keyframe,
+                frame_idx  = frame_idx,
+                pts_time   = pts_time,
+                similarity = sim
+            )
+
             if video_name not in results:
-                kf = Keyframe(
-                    path       = keyframe,
-                    frame_idx  = frame_idx,
-                    pts_time   = pts_time,
-                    similarity = sim
-                )
                 results[video_name] = SearchResult(
                     video_name = video_name,
                     watch_url  = watch_url,
@@ -72,7 +72,7 @@ class ClipRetrieval(JointEmbeddingRetrieval):
 
 
     def search_text(self, text: str, datatset: Dataset, top_k: int = 100):
-        tokenized_text = clip.tokenize([text]).to(self.device)
+        tokenized_text = clip.tokenize([translate_vi_to_en(text, max_length=60)]).to(self.device)
         with torch.no_grad(), torch.autocast(device_type=self.device, dtype=torch.float16):
             text_embedding = self.model.encode_text(tokenized_text)
         text_embedding = norm_vectors(text_embedding.detach().cpu().numpy())
@@ -116,12 +116,18 @@ class TextRetrieval:
         info_search: Literal["transcription", "description"],
         top_k: int = 100
     ):
-        tokenized_text = clip.tokenize([text]).to(self.device)   # for support select keyframe
+        tokenized_text = clip.tokenize([translate_vi_to_en(text, max_length=60)]).to(self.device)   # for support select keyframe
         with torch.no_grad(), torch.autocast(device_type=self.device, dtype=torch.float16):
-            text_embedding = self.model.encode([text], show_progress_bar=False)
             support_embedding = self.support_model.encode_text(tokenized_text)
-        text_embedding = norm_vectors(text_embedding)   # Todo: check device
+            text_embedding = self.model.encode(
+                [truncate_text(text, max_length=110)], 
+                prompt_name="document", 
+                show_progress_bar=False
+            )
+        
+        text_embedding = norm_vectors(text_embedding)   # TODO: check device
         self.support_embedding = norm_vectors(support_embedding.detach().cpu().numpy())
+        
         self.search(
             query_emb=text_embedding, 
             embs=dataset.transcription_embs if info_search == "transcription" else dataset.description_embs, 
@@ -143,7 +149,6 @@ class TextRetrieval:
         self,
         dataset: Dataset,
         info_search: Literal["transcription", "description"],
-        top_k: int = 100
     ) -> List[SearchResult]:
 
         if self.search_results is None:
@@ -151,6 +156,7 @@ class TextRetrieval:
 
 
         results = {}
+        seen = []
         info = dataset.transcription_info if info_search == "transcription" else dataset.description_info
         for idx, sim in zip(self.search_results["indexes"], self.search_results["similarity"]):
             sample  = self._select_sample(dataset, info, idx)
@@ -162,13 +168,14 @@ class TextRetrieval:
             frame_idx  = int(sample.map_keyframe.frame_idx.item())
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
+            kf = Keyframe(
+                path       = keyframe,
+                frame_idx  = frame_idx,
+                pts_time   = pts_time,
+                similarity = sim
+            )
+
             if video_name not in results:
-                kf = Keyframe(
-                    path       = keyframe,
-                    frame_idx  = frame_idx,
-                    pts_time   = pts_time,
-                    similarity = sim
-                )
                 results[video_name] = SearchResult(
                     video_name = video_name,
                     watch_url  = watch_url,
