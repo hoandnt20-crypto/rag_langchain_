@@ -1,5 +1,6 @@
 import os
 import logging
+
 from typing import List
 from config import KEYFRAMES, Sample
 from utils import (
@@ -15,8 +16,10 @@ from utils import (
     mapping_temporal_keyframe,
 )
 
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class Dataset:
 
@@ -39,8 +42,8 @@ class Dataset:
         
         # Mapping temporal keyframe 
         logger.info("Mapping temporal keyframe ...")
-        self.transcription_info = mapping_temporal_keyframe(self.transcription_info, self.map_keyframes)
-        self.description_info   = mapping_temporal_keyframe(self.description_info, self.map_keyframes, expand_temporal=4)
+        self.transcription_info = mapping_temporal_keyframe(self.transcription_info, self.map_keyframes, expand_temporal=10)
+        self.description_info   = mapping_temporal_keyframe(self.description_info, self.map_keyframes, expand_temporal=30)
         logger.info("Dataset loaded successfully")
 
     def __len__(self):

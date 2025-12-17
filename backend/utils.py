@@ -16,6 +16,9 @@ from config import (
     MAP_KEYFRAMES,
     N_cols
 )
+from deep_translator import GoogleTranslator
+
+
 
 
 def get_video_name(img_path: str) -> str:
@@ -23,10 +26,26 @@ def get_video_name(img_path: str) -> str:
     return img_path[i-3:i+5]
 
 
+def translate_vi_to_en(query_vi: str, max_length=None) -> str:
+    text = GoogleTranslator(source="vi", target="en").translate(query_vi).strip()
+    text = truncate_text(text, max_length)
+    return text
+
+
+def truncate_text(text: str, max_length: int) -> str:
+    if len(text.split(" ")) > max_length:
+        return " ".join(text.split(" ")[:max_length])
+    return text
+
+
 def extract_timestamp(timestamp: str):
     def convert_to_seconds(time_str: str) -> float:
-        minutes, seconds = map(int, time_str.split(":"))
-        return minutes * 60 + seconds
+        try:
+            minutes, seconds = map(int, time_str.split(":"))
+            return minutes * 60 + seconds
+        except:
+            hours, minutes, seconds = map(int, time_str.split(":"))     # TODO: fix wrong format (hh:mm:ss)
+            return hours * 3600 + minutes * 60 + seconds
     start, end = timestamp.split(" - ")
     return convert_to_seconds(start), convert_to_seconds(end)
 
@@ -48,6 +67,7 @@ def mapping_temporal_keyframe(info: pd.DataFrame, map_keyframe: pd.DataFrame, ex
     grouped = df_matched.groupby(["video_name", "start", "end"]).agg({"index": list}).reset_index()
     info = info.merge(grouped, how="left", on=["video_name", "start", "end"])
     info["agg_index"] = info["index"].apply(lambda x: x if isinstance(x, list) else [])
+    info["agg_index"] = info["agg_index"].mask(info["agg_index"].apply(len)==0).bfill()
     info.drop(columns=["index"], inplace=True)
     return info
 

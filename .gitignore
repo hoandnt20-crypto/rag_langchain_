@@ -1,5 +1,8 @@
-.vscode
 __pycache__
-data/
-*.ipynb
+
+.vscode
 .env
+
+data/
+scratch/
+*ipynb
