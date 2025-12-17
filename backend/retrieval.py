@@ -135,14 +135,20 @@ class TextRetrieval:
         )
 
 
-    def _select_sample(self, dataset: Dataset, info: pd.DataFrame, idx: int) -> Sample:
+    def _select_sample(self, dataset: Dataset, info: pd.DataFrame, idx: int, seen: List[int]) -> Sample:
         '''
         select best keyframe from samples
         '''
         selected_info = info.loc[idx]
         selected_embeddings = dataset.clip_embs[selected_info.agg_index]
         sims = (selected_embeddings @ self.support_embedding.T).squeeze()
-        return dataset[selected_info.agg_index[np.argmax(sims).item()]]
+        sort_idx = np.argsort(-sims)
+        for i in sort_idx:
+            index = selected_info.agg_index[i]
+            if index not in seen:
+                seen.append(index)
+                return dataset[index], seen
+        return dataset[selected_info.agg_index[sort_idx[0]]], seen
 
 
     def collect_results(
@@ -155,11 +161,11 @@ class TextRetrieval:
             raise ValueError("No search has been performed yet.")
 
 
+        seen = []   # for deduplicate idx
         results = {}
-        seen = []
         info = dataset.transcription_info if info_search == "transcription" else dataset.description_info
         for idx, sim in zip(self.search_results["indexes"], self.search_results["similarity"]):
-            sample  = self._select_sample(dataset, info, idx)
+            sample, seen  = self._select_sample(dataset, info, idx, seen)
 
             video_name = sample.media_info.name
             title      = sample.media_info.title
