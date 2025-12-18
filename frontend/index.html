@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="CLIP-powered image retrieval system - Search videos using text or images">
-  <title>CLIP Image Retrieval | NewbieAI</title>
+  <title>Video Retrieval | NewbieAI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -18,34 +18,36 @@
         <!-- Compact Search Controls -->
         <div class="search-controls">
           <select id="searchModeSelect" class="search-mode-select">
-            <option value="text">📝 Text Search</option>
-            <option value="image">🖼️ Image Search</option>
+            <option value="text">Text CLIP</option>
+            <option value="description">Description</option>
+            <option value="transcription">Transcription</option>
+            <option value="image">Image CLIP</option>
           </select>
 
           <div class="topk-compact">
             <span class="topk-label-compact">Top K:</span>
-            <input type="number" id="topkInput" class="topk-input-compact" value="100" min="1" max="500" step="10">
+            <input type="number" id="topkInput" class="topk-input-compact" value="200" min="1" max="500" step="10">
           </div>
+          <button id="searchBtn" class="btn btn-primary">
+            🔍
+          </button>
         </div>
 
         <!-- Text Search Content -->
         <div id="textSearchContent" class="search-content active">
           <div class="search-input-group-sidebar">
-            <input type="text" id="searchInput" class="search-input" placeholder="Describe what you're looking for...">
-            <button id="searchBtn" class="btn btn-primary">
-              Search
-            </button>
+            <textarea id="searchInput" class="search-input" placeholder="Describe what you're looking for..."
+              rows="1"></textarea>
           </div>
         </div>
-
         <!-- Image Search Content - ĐÃ CẬP NHẬT ĐỂ GỘP PREVIEW -->
         <div id="imageSearchContent" class="search-content">
           <!-- Khu vực Upload/Preview -->
           <div id="uploadArea" class="upload-area">
-            
+
             <!-- Ảnh Preview (Ẩn mặc định) -->
             <img id="previewImage" class="preview-image" alt="Preview Image" style="display: none;">
-            
+
             <!-- Nội dung mặc định khi chưa có ảnh -->
             <div id="uploadDefaultContent" class="upload-default-content">
               <div class="upload-icon">📤</div>
@@ -55,14 +57,10 @@
 
             <!-- Nút xóa ảnh đã chọn (Ẩn mặc định) -->
             <button id="clearImageBtn" class="clear-image-btn" style="display: none;">✕</button>
-            
+
             <!-- Input file được đặt ở đây và làm cho nó bao phủ toàn bộ vùng qua CSS -->
             <input type="file" id="imageInput" accept="image/*">
           </div>
-
-          <button id="uploadBtn" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">
-            Search
-          </button>
         </div>
 
         <!-- Error Message -->
@@ -95,7 +93,7 @@
     <div class="content-wrapper">
       <!-- Header -->
       <header class="header">
-        <h1>🔍 CLIP Image Retrieval</h1>
+        <h1>🔍 Video Retrieval</h1>
         <p>Search through video keyframes using natural language or images</p>
       </header>
 

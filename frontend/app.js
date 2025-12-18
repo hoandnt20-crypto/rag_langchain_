@@ -7,14 +7,14 @@ const textSearchContent = document.getElementById('textSearchContent');
 const imageSearchContent = document.getElementById('imageSearchContent');
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
-const topkInput = document.getElementById('topkInput'); 
+const topkInput = document.getElementById('topkInput');
 const uploadArea = document.getElementById('uploadArea');
 const imageInput = document.getElementById('imageInput');
 
 // Image Preview Elements
 const previewImage = document.getElementById('previewImage');
-const uploadDefaultContent = document.getElementById('uploadDefaultContent'); 
-const clearImageBtn = document.getElementById('clearImageBtn'); 
+const uploadDefaultContent = document.getElementById('uploadDefaultContent');
+const clearImageBtn = document.getElementById('clearImageBtn');
 
 const uploadBtn = document.getElementById('uploadBtn');
 const loading = document.getElementById('loading');
@@ -37,7 +37,7 @@ let selectedImage = null;
 
 // Khởi tạo Player khi API sẵn sàng (theo cách bạn yêu cầu)
 // Lưu ý: Đảm bảo script YouTube API đã được load trong HTML
-window.onYouTubeIframeAPIReady = function() {
+window.onYouTubeIframeAPIReady = function () {
     console.log("YouTube IFrame API script loaded."); // Debug log
     // Tạo player gắn vào thẻ div có id="youtubePlayer"
     player = new YT.Player('youtubePlayer', {
@@ -50,7 +50,7 @@ window.onYouTubeIframeAPIReady = function() {
             'modestbranding': 1,
             'rel': 0,
             // Quan trọng: Thêm origin để tránh lỗi 153 trong một số môi trường
-            'origin': window.location.origin 
+            'origin': window.location.origin
         },
         events: {
             'onStateChange': onPlayerStateChange
@@ -69,7 +69,7 @@ searchModeSelect.addEventListener('change', (e) => switchMode(e.target.value));
 
 function switchMode(mode) {
     currentMode = mode;
-    if (mode === 'text') {
+    if (mode === 'text' || mode === "description" || mode === "transcription") {
         textSearchContent.classList.add('active');
         imageSearchContent.classList.remove('active');
     } else {
@@ -78,14 +78,33 @@ function switchMode(mode) {
     }
     hideResults();
     hideError();
-    clearPreview(); 
+    clearPreview();
 }
 
-// Xử lý tìm kiếm Text
-searchBtn.addEventListener('click', performTextSearch);
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performTextSearch();
+// Xử lý tìm kiếm thống nhất (Text hoặc Image)
+searchBtn.addEventListener('click', performUnifiedSearch);
+
+// Tự động mở rộng textarea và xử lý phím Enter
+searchInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
 });
+
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        performUnifiedSearch();
+    }
+});
+
+// Hàm tìm kiếm thống nhất - kiểm tra mode và gọi hàm tương ứng
+async function performUnifiedSearch() {
+    if (currentMode === 'text' || currentMode === 'description' || currentMode === 'transcription') {
+        await performTextSearch();
+    } else {
+        await performImageSearch();
+    }
+}
 
 async function performTextSearch() {
     const query = searchInput.value.trim();
@@ -104,7 +123,17 @@ async function performTextSearch() {
         formData.append('query', query);
         formData.append('top_k', topK);
 
-        const response = await fetch(`${API_BASE_URL}/search/text`, {
+        // Chọn endpoint dựa trên currentMode
+        let endpoint;
+        if (currentMode === 'description') {
+            endpoint = `${API_BASE_URL}/search/description`;
+        } else if (currentMode === 'transcription') {
+            endpoint = `${API_BASE_URL}/search/transcription`;
+        } else {
+            endpoint = `${API_BASE_URL}/search/clip_text`;
+        }
+
+        const response = await fetch(endpoint, {
             method: 'POST',
             body: formData
         });
@@ -124,19 +153,19 @@ async function performTextSearch() {
 // === XỬ LÝ ẢNH (UPLOAD & PREVIEW) ===
 
 function clearPreview() {
-    selectedImage = null; 
-    imageInput.value = ''; 
-    previewImage.src = ''; 
-    previewImage.style.display = 'none'; 
-    uploadDefaultContent.style.display = 'flex'; 
-    clearImageBtn.style.display = 'none'; 
+    selectedImage = null;
+    imageInput.value = '';
+    previewImage.src = '';
+    previewImage.style.display = 'none';
+    uploadDefaultContent.style.display = 'flex';
+    clearImageBtn.style.display = 'none';
     uploadArea.classList.remove('has-image');
 }
 
 function handleImageFile(file) {
     if (!file.type.startsWith('image/')) {
         showError('Vui lòng chọn file ảnh hợp lệ');
-        clearPreview(); 
+        clearPreview();
         return;
     }
 
@@ -154,7 +183,7 @@ function handleImageFile(file) {
 }
 
 clearImageBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     clearPreview();
 });
 
@@ -174,8 +203,7 @@ imageInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
 });
 
-// Xử lý tìm kiếm Ảnh
-uploadBtn.addEventListener('click', performImageSearch);
+// Xử lý tìm kiếm Ảnh (được gọi từ performUnifiedSearch)
 
 async function performImageSearch() {
     if (!selectedImage) {
@@ -193,7 +221,7 @@ async function performImageSearch() {
         formData.append('file', selectedImage);
         formData.append('top_k', topK);
 
-        const response = await fetch(`${API_BASE_URL}/search/image`, {
+        const response = await fetch(`${API_BASE_URL}/search/clip_image`, {
             method: 'POST',
             body: formData
         });
@@ -218,8 +246,8 @@ function displayResults(results) {
         return;
     }
 
-    const totalKeyframes = results.reduce((sum, video) => sum + video.keyframe.length, 0);
-    resultsCount.textContent = `Tìm thấy ${totalKeyframes} keyframe trong ${results.length} video`;
+    const totalKeyframes = results.reduce((sum, video) => sum + video.keyframes.length, 0);
+    resultsCount.textContent = `Found total ${totalKeyframes} keyframes in ${results.length} videos`;
 
     videoResults.innerHTML = '';
     results.forEach((video, index) => {
@@ -245,14 +273,14 @@ function createVideoCard(video, index) {
     const keyframesGrid = document.createElement('div');
     keyframesGrid.className = 'keyframes-grid';
 
-    video.keyframe.forEach((keyframePath, idx) => {
+    video.keyframes.forEach((Keyframe, idx) => {
         keyframesGrid.appendChild(createKeyframeItem(
-            keyframePath,
-            video.similarity[idx],
-            video.frame_idx[idx],
-            video.pts_time[idx],
+            Keyframe.path,
+            Keyframe.similarity,
+            Keyframe.frame_idx,
+            Keyframe.pts_time,
             video.watch_url,
-            video.video_name
+            `${video.video_name} : ${video.title}`
         ));
     });
 
@@ -272,19 +300,7 @@ function createKeyframeItem(keyframePath, similarity, frameIdx, ptsTime, watchUr
         img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23333" width="200" height="150"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not found%3C/text%3E%3C/svg%3E';
     };
 
-    const info = document.createElement('div');
-    info.className = 'keyframe-info';
-    const score = document.createElement('div');
-    score.className = 'similarity-score';
-    score.textContent = `${(similarity * 100).toFixed(1)}%`;
-    const details = document.createElement('div');
-    details.className = 'frame-details';
-    details.innerHTML = `Frame: ${frameIdx}<br>Time: ${ptsTime.toFixed(2)}s`;
-
-    info.appendChild(score);
-    info.appendChild(details);
     item.appendChild(img);
-    item.appendChild(info);
 
     item.addEventListener('click', () => {
         playVideo(watchUrl, ptsTime, videoName);
@@ -307,9 +323,9 @@ function playVideo(watchUrl, startTime, title) {
     // Hiển thị khung video
     videoPreview.classList.add('active');
     videoPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
+
     videoTitle.textContent = title;
-    videoTime.textContent = `Bắt đầu tại: ${startTime.toFixed(2)}s`;
+    videoTime.textContent = `Bắt đầu tại: ${formatTime(startTime)}`;
 
     // Gọi API trực tiếp, không try-catch
     if (player) {
@@ -338,16 +354,20 @@ closePreviewBtn.addEventListener('click', () => {
 });
 
 // UI Helper Functions
+function formatTime(seconds) {
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
 function showLoading() {
     loading.classList.add('active');
-    if (currentMode === 'text') searchBtn.disabled = true;
-    else uploadBtn.disabled = true;
+    searchBtn.disabled = true;
 }
 
 function hideLoading() {
     loading.classList.remove('active');
-    if (currentMode === 'text') searchBtn.disabled = false;
-    else uploadBtn.disabled = false;
+    searchBtn.disabled = false;
 }
 
 function showError(message) {
@@ -370,5 +390,5 @@ function hideResults() {
 }
 
 // Initialize
-console.log('CLIP Image Retrieval UI initialized');
+console.log('Image Retrieval UI initialized');
 console.log('API Base URL:', API_BASE_URL);
