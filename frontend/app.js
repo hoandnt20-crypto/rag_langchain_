@@ -280,7 +280,7 @@ function createVideoCard(video, index) {
             Keyframe.frame_idx,
             Keyframe.pts_time,
             video.watch_url,
-            `${video.video_name} : ${video.title}`
+            `${video.video_name}: ${video.title}`
         ));
     });
 
@@ -314,7 +314,7 @@ function createKeyframeItem(keyframePath, similarity, frameIdx, ptsTime, watchUr
 function playVideo(watchUrl, startTime, title) {
     if (!watchUrl) return;
 
-    const videoId = extractVideoId(watchUrl);
+    const videoId = watchUrl;
     if (!videoId) {
         showError('URL video không hợp lệ');
         return;

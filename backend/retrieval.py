@@ -40,8 +40,8 @@ class JointEmbeddingRetrieval:
         for sim, sample in zip(self.search_results["similarity"], samples):
             video_name = sample.media_info.name
             title      = sample.media_info.title
-            keyframe   = sample.keyframe.replace("../data/", "").replace("\\", "/")      # eg: https://youtube.com/embed/p6h043fMCUA
-            watch_url  = sample.media_info.watch_url.replace("watch?v=", "embed/")       # eg: keyframes/L22_V025/203.jpg
+            keyframe   = sample.keyframe.replace("../data/", "").replace("\\", "/")    
+            watch_url  = sample.media_info.watch_url.split("watch?v=")[-1]
             frame_idx  = int(sample.map_keyframe.frame_idx.item())
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
@@ -170,7 +170,7 @@ class TextRetrieval:
             video_name = sample.media_info.name
             title      = sample.media_info.title
             keyframe   = sample.keyframe.replace("../data/", "").replace("\\", "/")      # eg: keyframes/L22_V025/203.jpg
-            watch_url  = sample.media_info.watch_url.replace("watch?v=", "embed/")       # eg: https://youtube.com/embed/p6h043fMCUA
+            watch_url  = sample.media_info.watch_url.split("watch?v=")[-1]              # eg: https://youtube.com/embed/p6h043fMCUA
             frame_idx  = int(sample.map_keyframe.frame_idx.item())
             pts_time   = float(sample.map_keyframe.pts_time.item())
 
